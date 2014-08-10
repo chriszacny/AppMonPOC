@@ -1,0 +1,138 @@
+html {
+	font-family: "Unica One", sans-serif;
+	background-color: #45484d;
+	text-transform: uppercase;
+}
+
+*  {
+  margin: 0;
+  padding: 0;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, nav, section { display: block; }
+[hidden] { display: none; }
+
+ul, ol {
+    list-style: none;
+}
+
+a:link {
+    color: #86C543;
+}
+
+/* visited link */
+a:visited {
+    color: #86C543;
+}
+
+/* mouse over link */
+a:hover {
+    color: #FF00FF;
+}
+
+/* selected link */
+a:active {
+    color: #0000FF;
+}
+
+.header {
+	margin-bottom: 20px;
+	margin-top: 10px;
+	
+}
+
+.font-white {
+	color: #F2F2F2;
+	text-align:center;
+}
+
+.font-black-center {
+	color: #000000;
+	text-align:center;
+}
+
+.stack-horiz {
+	display: inline-block;
+}
+
+.f-right {
+	float: right;
+	margin-right: 20px;
+	font-size: 1em
+}
+
+.welcome-user {
+	margin-right: 20px;
+}
+
+.title-text {
+	margin-left: 300px;
+	font-size: 2em;
+}
+
+.data {
+	text-transform: none;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
+	font-size: .75em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+	padding: 5px;
+}
+
+.hidden-overflow {
+	overflow: hidden;
+}
+
+.good-back {
+	background-color: #86C543 !important;
+}
+
+.warn-back {
+	background-color: #FCFC2F !important;
+}
+
+.error-back {
+	background-color: #E71414 !important;
+}
+
+.critical-back {
+	background-color: #B608A2 !important;
+}
+
+/* Gridster */
+.grid {
+    margin: 3em 0;
+    padding: 7.5em 0 5.5em;
+    background: #004756;
+}
+
+.gridster {
+    width: 960px;
+    margin: 0 auto;
+}
+
+.gridster .gs-w {
+    background: #FFF;
+    cursor: pointer;
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+.gridster .player {
+    -webkit-box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+    box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+}
+
+.gridster .gs-w.try {
+    background-image: url(../img/sprite.png);
+    background-repeat: no-repeat;
+    background-position: 37px -169px;
+
+}
+
+.gridster .preview-holder {
+    border: none!important;
+    border-radius: 0!important;
+    background: rgba(255,255,255,.2)!important;
+}

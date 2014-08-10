@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Application Monitor</title>
+		<script src="jquery-2.1.1.min.js"></script>
+		<script src="jquery.gridster.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Unica+One">
+		<link rel="stylesheet" type="text/css" href="site.css">
+		<link rel="stylesheet" type="text/css" href="jquery.gridster.min.css">
+		
+		<script type="text/javascript">
+		
+			function loadGridster() {
+			    gridster = $(".gridster > ul").gridster({
+			        widget_margins: [10, 10],
+			        widget_base_dimensions: [140, 140],
+			        min_cols: 6,
+			        resize: {
+			            enabled: true
+			        }
+			    }).data('gridster');
+			}
+		
+			function getAppHealthClass(healthNumber) {
+				var to_return = "hidden-overflow good-back gs-w";
+				if (healthNumber == 1) {
+					return "hidden-overflow warn-back gs-w";
+				}
+				else if (healthNumber == 2) {
+					return "hidden-overflow error-back gs-w";
+				}
+				else if (healthNumber == 3) {
+					return "hidden-overflow critical-back gs-w";
+				}		
+				return to_return;		
+			}
+		
+			function receiveAndProcessServerData(evt) {
+				var parsed_json = $.parseJSON(evt.data);
+				for (var i = 0; i < 4; i++) {
+					var raw_app_id = i + 1;
+					var my_list = parsed_json[raw_app_id]["data"];
+					var current_app_health_number = parsed_json[raw_app_id]["current_app_health"];
+					var current_app_health_class = getAppHealthClass(current_app_health_number);
+					var li_to_update = $("#app-id-" + raw_app_id + "-li");
+					li_to_update.removeClass();
+					li_to_update.addClass(current_app_health_class);
+					
+					var to_append = "";
+					for (var j = 0; j < my_list.length; j++) {
+						var raw_message = my_list[j]["message"];
+						var alert_type = my_list[j]["alert_type"];
+						to_append += raw_message + "<br>";
+					}
+					var jq_app_id = "#app-id-" + raw_app_id + "-data";
+					var current_html = $(jq_app_id).html();
+					var new_html = to_append + current_html;
+					$(jq_app_id).html(new_html);
+				}
+			}
+		
+			function openTornadoWebSocket() {
+				var ws = new WebSocket("ws://localhost:8888/appdata");
+				ws.onmessage = receiveAndProcessServerData;
+			}
+		
+			$(function() {
+				openTornadoWebSocket();
+				loadGridster();
+			});
+		</script>
+		
+	</head>
+	
+	<body>
+		<section class="header">
+			<div class="font-white">
+				<div class="stack-horiz title-text">Application Monitor</div>
+				<div class="f-right">
+					<div class="stack-horiz welcome-user">Welcome <a href="#">Chris Zacny</a></div>
+					<div class="stack-horiz"><a href="#">Administration</a></div>
+				</div>
+			</div>
+		</section>
+		<section class="main">
+			<div class="gridster">
+			    <ul>
+					<li id="app-id-1-li" data-row="1" data-col="1" data-sizex="2" data-sizey="2" class="hidden-overflow good-back">
+						<div>
+							<div class="font-black-center">Marketing Mailer</div>
+							<div id="app-id-1-data" class="data">
+							</div>
+						</div>
+					</li>
+					<li id="app-id-2-li" data-row="1" data-col="3" data-sizex="2" data-sizey="2" class="hidden-overflow good-back">
+						<div>
+							<div class="font-black-center">Firm Contact Submitter</div>
+							<div id="app-id-2-data" class="data"></div>
+						</div>
+					</li>
+					<li id="app-id-3-li" data-row="1" data-col="5" data-sizex="2" data-sizey="1" class="hidden-overflow good-back">
+						<div>
+							<div class="font-black-center">Account Creation Process</div>
+							<div id="app-id-3-data" class="data"></div>
+						</div>
+					</li>
+					<li id="app-id-4-li" data-row="2" data-col="5" data-sizex="2" data-sizey="1" class="hidden-overflow good-back">
+						<div>
+							<div class="font-black-center">Rebate Processor</div>
+							<div id="app-id-4-data" class="data"></div>
+						</div>
+					</li>
+					<li data-row="3" data-col="1" data-sizex="6" data-sizey="2" class="hidden-overflow">
+						<div id="messaging-rates">
+							<div class="font-black-center">Subject Messaging Rates</div>
+							<div class="subject-messaging-rates"></div>
+						</div>
+					</li>
+			    </ul>
+			</div>
+		</section>
+	</body>
+</html>
