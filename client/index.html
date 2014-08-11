@@ -4,12 +4,15 @@
 		<title>Application Monitor</title>
 		<script src="jquery-2.1.1.min.js"></script>
 		<script src="jquery.gridster.min.js"></script>
+		<script src="highcharts.js"></script>
+		<script type="text/javascript" src="themes/dark-unica.js"></script>
 		<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Unica+One">
 		<link rel="stylesheet" type="text/css" href="site.css">
 		<link rel="stylesheet" type="text/css" href="jquery.gridster.min.css">
 		
 		<script type="text/javascript">
 		
+			var currentRate = 0;
 			function loadGridster() {
 			    gridster = $(".gridster > ul").gridster({
 			        widget_margins: [10, 10],
@@ -37,6 +40,7 @@
 		
 			function receiveAndProcessServerData(evt) {
 				var parsed_json = $.parseJSON(evt.data);
+				var count = 0;
 				for (var i = 0; i < 4; i++) {
 					var raw_app_id = i + 1;
 					var my_list = parsed_json[raw_app_id]["data"];
@@ -51,12 +55,14 @@
 						var raw_message = my_list[j]["message"];
 						var alert_type = my_list[j]["alert_type"];
 						to_append += raw_message + "<br>";
+						count++;
 					}
 					var jq_app_id = "#app-id-" + raw_app_id + "-data";
 					var current_html = $(jq_app_id).html();
 					var new_html = to_append + current_html;
 					$(jq_app_id).html(new_html);
 				}
+				currentRate = count;
 			}
 		
 			function openTornadoWebSocket() {
@@ -64,9 +70,72 @@
 				ws.onmessage = receiveAndProcessServerData;
 			}
 		
+			function loadHighcharts() {
+				$('#chart').highcharts({
+			        chart: {
+			            type: 'spline',
+						height: 300,
+						animation: Highcharts.svg,
+		                events: {
+		                    load: function() {
+    
+		                        // set up the updating of the chart each second
+		                        var series = this.series[0];
+		                        setInterval(function() {
+		                            var x = (new Date()).getTime(), // current time
+		                                y = currentRate;
+		                            series.addPoint([x, y], true, true);
+		                        }, 1000);
+		                    }
+		                }
+			        },
+			        title: {
+			            text: 'Subject Messaging Rates'
+			        },
+		            xAxis: {
+		                type: 'datetime',
+		                tickPixelInterval: 150
+		            },
+		            yAxis: {
+		                title: {
+		                    text: 'Value'
+		                },
+		                plotLines: [{
+		                    value: 0,
+		                    width: 1,
+		                    color: '#808080'
+		                }]
+		            },
+		            legend: {
+		                enabled: false
+		            },
+		            exporting: {
+		                enabled: false
+		            },
+		            series: [{
+		                name: 'Inbound Messages',
+		                data: (function() {
+		                    var data = [],
+		                        time = (new Date()).getTime(),
+		                        i;
+    
+			                    for (i = -19; i <= 0; i++) {
+			                        data.push({
+			                            x: time + i * 1000,
+			                            y: currentRate
+			                        });
+			                    }
+
+		                    return data;
+		                })()
+		            }]
+			    });
+			}
+		
 			$(function() {
 				openTornadoWebSocket();
 				loadGridster();
+				loadHighcharts();
 			});
 		</script>
 		
@@ -112,8 +181,7 @@
 					</li>
 					<li data-row="3" data-col="1" data-sizex="6" data-sizey="2" class="hidden-overflow">
 						<div id="messaging-rates">
-							<div class="font-black-center">Subject Messaging Rates</div>
-							<div class="subject-messaging-rates"></div>
+							<div id="chart" class="subject-messaging-rates"></div>
 						</div>
 					</li>
 			    </ul>

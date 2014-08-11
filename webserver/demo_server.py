@@ -10,6 +10,20 @@ from threading import Timer
 
 TORNADO_PORT = 8888
 NUMBER_OF_TEST_APPS = 4
+MAX_MESSAGES_TO_SEND = 2
+DEFAULT_URL = "www.chriszacny.com"
+WEBSOCKET_PATH = "appdata"
+REFRESH_RATE = 1.0
+
+
+class JsonKeyStrings(object):
+    Data = "data"
+    Message = "message"
+    AlertTypeText = "alert_type"
+    Category = "category"
+    Url = "url"
+    CurrentAppHealth = "current_app_health"
+
 
 
 class AppHealth(object):
@@ -103,14 +117,40 @@ class CachedApplicationData(metaclass=Singleton):
     def update(self, json_message_payload):
         for i in range(0, NUMBER_OF_TEST_APPS):
             app_id = i+1
-            for message_item in json_message_payload[app_id]["data"]:
-                domain_message = DomainMessage(app_id, message_item["message"], message_item["alert_type"], category=message_item["category"], url=message_item["url"])
+            for message_item in json_message_payload[app_id][JsonKeyStrings.Data]:
+                domain_message = DomainMessage(app_id, message_item[JsonKeyStrings.Message], message_item[JsonKeyStrings.AlertTypeText], category=message_item[JsonKeyStrings.Category], url=message_item[JsonKeyStrings.Url])
                 self.data[app_id].insert(0, domain_message)
             current_app_health = self.get_appropriate_current_app_health(app_id)
-            json_message_payload[app_id]["current_app_health"] = current_app_health
+            json_message_payload[app_id][JsonKeyStrings.CurrentAppHealth] = current_app_health
 
 
 class MainHandler(tornado.websocket.WebSocketHandler):
+    def get_random_alert_type(self, alert_types):
+        alert_seed = random.randint(0, 50)
+        if alert_seed is 50:
+            alert_type = alert_types[4]
+        elif alert_seed is 49:
+            alert_type = alert_types[3]
+        elif alert_seed is 48:
+            alert_type = alert_types[2]
+        elif alert_seed is 47 or alert_seed is 46:
+            alert_type = alert_types[1]
+        else:
+            alert_type = alert_types[0]
+        return alert_type
+
+    def hydrate_payload_with_random_data(self, alert_types, categories, message_payload):
+        for i in range(0, NUMBER_OF_TEST_APPS):
+            number_of_messages_to_send = random.randint(0, MAX_MESSAGES_TO_SEND)
+            for j in range(0, number_of_messages_to_send):
+                alert_type = self.get_random_alert_type(alert_types)
+                category = categories[random.randint(0, 1)]
+                this_message = "{} {} This is test data...".format(datetime.datetime.now().strftime("%y%m%d %H:%M"),
+                                                                   alert_type)
+                message_payload[i + 1][JsonKeyStrings.Data].append(
+                    {JsonKeyStrings.AlertTypeText: alert_type, JsonKeyStrings.Message: this_message, JsonKeyStrings.Url: DEFAULT_URL,
+                     JsonKeyStrings.Category: category})
+
     def random_message_burst(self):
         """
         Generate 4 sets of messages. This is all just mock data for now.
@@ -119,15 +159,8 @@ class MainHandler(tornado.websocket.WebSocketHandler):
         alert_types = {0: AlertType.Information, 1: AlertType.Warning, 2: AlertType.Error, 3: AlertType.ErrorHigh, 4: AlertType.Critical}
         categories = {0: Category.System, 1: Category.Business}
 
-        message_payload = {1: {"current_app_health": None, "data": []}, 2: {"current_app_health": None, "data": []}, 3: {"current_app_health": None, "data": []}, 4: {"current_app_health": None, "data": []}}
-        for i in range(0, NUMBER_OF_TEST_APPS):
-            number_of_messages_to_send = random.randint(0, 5)
-            for j in range(0, number_of_messages_to_send):
-                alert_type = alert_types[random.randint(0, 4)]
-                category = categories[random.randint(0, 1)]
-                this_message = "{} {} This is test data...".format(datetime.datetime.now().strftime("%y%m%d %H:%M"), alert_type)
-                message_payload[i+1]["data"].append({"alert_type": alert_type, "message": this_message, "url": "www.chriszacny.com", "category": category})
-
+        message_payload = {1: {JsonKeyStrings.CurrentAppHealth: None, JsonKeyStrings.Data: []}, 2: {JsonKeyStrings.CurrentAppHealth: None, JsonKeyStrings.Data: []}, 3: {JsonKeyStrings.CurrentAppHealth: None, JsonKeyStrings.Data: []}, 4: {JsonKeyStrings.CurrentAppHealth: None, JsonKeyStrings.Data: []}}
+        self.hydrate_payload_with_random_data(alert_types, categories, message_payload)
         CachedApplicationData().update(message_payload) # This will also update app_health
         self.write_message(json.dumps(message_payload))
 
@@ -137,8 +170,8 @@ class MainHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         print("WebSocket opened")
 
-        # Every five seconds, send a random burst of messages to the client
-        self.rt = RepeatedTimer(5.0, self.random_message_burst)
+        # Every one seconds, send a random burst of messages to the client
+        self.rt = RepeatedTimer(REFRESH_RATE, self.random_message_burst)
 
     def on_close(self):
         print("WebSocket closed")
@@ -146,7 +179,12 @@ class MainHandler(tornado.websocket.WebSocketHandler):
 
 
 def main():
-    application = tornado.web.Application([(r"/appdata", MainHandler)])
+    """
+    In a real application, I'd also have a standard tornado tornado.web.RequestHandler handler that would handle standard HTTP RESTful requests.
+    It would use something like jinja templating to generate the HTML. Of course there would also be tests, in addition to a logical module
+    layout.
+    """
+    application = tornado.web.Application([(r"/{}".format(WEBSOCKET_PATH), MainHandler)])
     port = TORNADO_PORT
     application.listen(port)
     print("Started Tornado on port {}...".format(port))

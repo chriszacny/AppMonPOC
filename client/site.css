@@ -100,6 +100,10 @@ a:active {
 	background-color: #B608A2 !important;
 }
 
+.subject-messaging-rates {
+	width: auto;
+}
+
 /* Gridster */
 .grid {
     margin: 3em 0;
