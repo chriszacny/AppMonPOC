@@ -126,14 +126,14 @@ class CachedApplicationData(metaclass=Singleton):
 
 class MainHandler(tornado.websocket.WebSocketHandler):
     def get_random_alert_type(self, alert_types):
-        alert_seed = random.randint(0, 50)
-        if alert_seed is 50:
+        alert_seed = random.randint(0, 200)
+        if alert_seed is 200:
             alert_type = alert_types[4]
-        elif alert_seed is 49:
+        elif alert_seed is 199:
             alert_type = alert_types[3]
-        elif alert_seed is 48:
+        elif alert_seed is 198:
             alert_type = alert_types[2]
-        elif alert_seed is 47 or alert_seed is 46:
+        elif alert_seed is 197 or alert_seed is 196:
             alert_type = alert_types[1]
         else:
             alert_type = alert_types[0]
