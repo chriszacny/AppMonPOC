@@ -12,7 +12,11 @@
 		
 		<script type="text/javascript">
 		
-			var currentRate = 0;
+			var currentRate1 = 0;
+			var currentRate2 = 0;
+			var currentRate3 = 0;
+			var currentRate4 = 0;
+			
 			function loadGridster() {
 			    gridster = $(".gridster > ul").gridster({
 			        widget_margins: [10, 10],
@@ -39,8 +43,11 @@
 			}
 		
 			function receiveAndProcessServerData(evt) {
+				currentRate1 = 0;
+				currentRate2 = 0;
+				currentRate3 = 0;
+				currentRate4 = 0;
 				var parsed_json = $.parseJSON(evt.data);
-				var count = 0;
 				for (var i = 0; i < 4; i++) {
 					var raw_app_id = i + 1;
 					var my_list = parsed_json[raw_app_id]["data"];
@@ -55,14 +62,24 @@
 						var raw_message = my_list[j]["message"];
 						var alert_type = my_list[j]["alert_type"];
 						to_append += raw_message + "<br>";
-						count++;
+						if (i == 0) {
+							currentRate1++;
+						}
+						else if (i == 1) {
+							currentRate2++;
+						}
+						else if (i == 2) {
+							currentRate3++;
+						}
+						else if (i == 3) {
+							currentRate4++;
+						}
 					}
 					var jq_app_id = "#app-id-" + raw_app_id + "-data";
 					var current_html = $(jq_app_id).html();
 					var new_html = to_append + current_html;
 					$(jq_app_id).html(new_html);
 				}
-				currentRate = count;
 			}
 		
 			function openTornadoWebSocket() {
@@ -80,12 +97,25 @@
 		                    load: function() {
     
 		                        // set up the updating of the chart each second
-		                        var series = this.series[0];
+		                        var series1 = this.series[0];
+								var series2 = this.series[1];
+								var series3 = this.series[2];
+								var series4 = this.series[3];
+								
 		                        setInterval(function() {
-		                            var x = (new Date()).getTime(), // current time
-		                                y = currentRate;
-		                            series.addPoint([x, y], true, true);
-		                        }, 1000);
+		                            var x1 = (new Date()).getTime(); // current time
+									var x2 = (new Date()).getTime(); // current time
+									var x3 = (new Date()).getTime(); // current time
+									var x4 = (new Date()).getTime(); // current time
+		                            var y1 = currentRate1;
+									var y2 = currentRate2;
+									var y3 = currentRate3;
+									var y4 = currentRate4;
+		                            series1.addPoint([x1, y1], true, true);
+									series2.addPoint([x2, y2], true, true);
+									series3.addPoint([x3, y3], true, true);
+									series4.addPoint([x4, y4], true, true);
+		                        }, 3000);
 		                    }
 		                }
 			        },
@@ -112,23 +142,76 @@
 		            exporting: {
 		                enabled: false
 		            },
-		            series: [{
-		                name: 'Inbound Messages',
-		                data: (function() {
-		                    var data = [],
-		                        time = (new Date()).getTime(),
-		                        i;
+		            series: [
+						{
+							name: 'Inbound Messages Application 1',
+			                data: (function() {
+			                    var data = [],
+			                        time = (new Date()).getTime(),
+			                        i;
     
-			                    for (i = -19; i <= 0; i++) {
-			                        data.push({
-			                            x: time + i * 1000,
-			                            y: currentRate
-			                        });
-			                    }
+				                    for (i = -5; i <= 0; i++) {
+				                        data.push({
+				                            x: time + i * 3000,
+				                            y: currentRate1
+				                        });
+				                    }
 
-		                    return data;
-		                })()
-		            }]
+			                    return data;
+			                })()
+						},
+						{
+			                name: 'Inbound Messages Application 2',
+			                data: (function() {
+			                    var data = [],
+			                        time = (new Date()).getTime(),
+			                        i;
+
+				                    for (i = -5; i <= 0; i++) {
+				                        data.push({
+				                            x: time + i * 3000,
+				                            y: currentRate2
+				                        });
+				                    }
+
+			                    return data;
+			                })()
+						},
+						{
+			                name: 'Inbound Messages Application 3',
+			                data: (function() {
+			                    var data = [],
+			                        time = (new Date()).getTime(),
+			                        i;
+
+				                    for (i = -5; i <= 0; i++) {
+				                        data.push({
+				                            x: time + i * 3000,
+				                            y: currentRate3
+				                        });
+				                    }
+
+			                    return data;
+			                })()
+						},
+		                {
+							name: 'Inbound Messages Application 4',
+			                data: (function() {
+			                    var data = [],
+			                        time = (new Date()).getTime(),
+			                        i;
+
+				                    for (i = -5; i <= 0; i++) {
+				                        data.push({
+				                            x: time + i * 3000,
+				                            y: currentRate4
+				                        });
+				                    }
+
+			                    return data;
+			                })()
+						}
+					]
 			    });
 			}
 		
