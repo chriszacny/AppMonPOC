@@ -11,6 +11,8 @@ I used gridster.js to handle the blocks and resizing. I used highcharts.js for t
 
 The client maintains a WebSocket connection to the server, which in this implementation is a Python Tornado server.
 
+As a final note, this is meant to be conceptual... there is no error handling, things are hard-coded, no thread locking, etc. In practice, these things would all be done in a production application.
+
 #Installation / Usage:
 You will need to:
 
